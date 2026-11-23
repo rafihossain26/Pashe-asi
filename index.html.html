@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>পাশে আছি – সহজ কিস্তিতে লোন</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Hind Siliguri Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Hind Siliguri"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#b3261e',
+              dark: '#8f1d17',
+              light: '#fde8e7',
+              accent: '#f4b400'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col selection:bg-brand selection:text-white">
+
+  <!-- নেভিগেশন বার -->
+  <nav class="bg-brand text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 cursor-pointer font-bold text-lg sm:text-xl tracking-wide shrink-0" onclick="go('home')">
+        <span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-brand-accent inline-block shadow-sm"></span>
+        <span>পাশে আছি</span>
+      </div>
+      <div class="flex items-center gap-1.5 sm:gap-3" id="nav-links">
+        <!-- জাভাস্ক্রিপ্ট দিয়ে বাটন রেন্ডার হবে -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- মেইন কন্টেন্ট এরিয়া -->
+  <main id="app" class="flex-grow pb-16 sm:pb-0"></main>
+
+  <!-- ফুটার -->
+  <footer class="bg-neutral-900 text-neutral-400 py-6 text-xs sm:text-sm text-center mt-10">
+    <div class="max-w-5xl mx-auto px-4 space-y-2">
+      <div>© ২০২৬ পাশে আছি। সর্বস্বত্ব সংরক্ষিত। সহজ শর্তে ও স্বচ্ছ হিসাবে আপনার পাশে।</div>
+      <div>
+        <button onclick="go('login')" class="text-neutral-500 hover:text-neutral-300 underline text-xs transition">অ্যাডমিন লগইন</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- কাস্টম টোস্ট মেসেজ কন্টেইনার -->
+  <div id="toast-container" class="fixed bottom-20 sm:bottom-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-[90%] max-w-sm items-center"></div>
+
+  <!-- লাইভ অটো চ্যাট উইজেট (একদম ডান কোণায় ফিক্সড) -->
+  <div id="live-chat-widget" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
+    <!-- চ্যাট উইন্ডো -->
+    <div id="chat-window" class="hidden mb-3 w-[310px] sm:w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col transition-all">
+      <!-- চ্যাট হেডার -->
+      <div class="bg-brand text-white px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center font-bold text-sm relative">
+            <span>পা</span>
+            <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full absolute bottom-0 right-0 border-2 border-brand"></span>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm leading-tight">পাশে আছি সাপোর্ট</h4>
+            <span class="text-[11px] text-red-100 flex items-center gap-1">সর্বদা অনলাইন · অটো রিপ্লাই</span>
+          </div>
+        </div>
+        <button onclick="toggleChat()" class="text-white/80 hover:text-white text-xl font-bold px-1.5 leading-none" aria-label="চ্যাট বন্ধ করুন">×</button>
+      </div>
+
+      <!-- চ্যাট মেসেজ বক্স -->
+      <div id="chat-messages" class="p-3.5 h-64 overflow-y-auto space-y-2.5 bg-gray-50 text-xs sm:text-sm">
+        <div class="flex items-start gap-2">
+          <div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-2xl rounded-tl-none shadow-sm max-w-[85%]">
+            আসসালামু আলাইকুম! <b>পাশে আছি</b>-তে আপনাকে স্বাগতম। লোন, ইন্টারেস্ট, জামানত বা কিস্তি সম্পর্কে আপনার যেকোনো প্রশ্ন আমাকে করতে পারেন।
+          </div>
+        </div>
+      </div>
+
+      <!-- কুইক প্রশ্ন বাটন -->
+      <div class="px-2.5 py-2 bg-gray-100 border-t border-gray-200 flex gap-1.5 overflow-x-auto">
+        <button onclick="sendQuickChat('লোন কিভাবে পাবো?')" class="whitespace-nowrap text-[11px] bg-white hover:bg-brand-light text-brand border border-red-200 px-2.5 py-1 rounded-full font-semibold transition">লোন কিভাবে পাবো?</button>
+        <button onclick="sendQuickChat('ইন্টারেস্ট ও জামানত কত?')" class="whitespace-nowrap text-[11px] bg-white hover:bg-brand-light text-brand border border-red-200 px-2.5 py-1 rounded-full font-semibold transition">ইন্টারেস্ট ও জামানত কত?</button>
+        <button onclick="sendQuickChat('কিস্তি কিভাবে দিব?')" class="whitespace-nowrap text-[11px] bg-white hover:bg-brand-light text-brand border border-red-200 px-2.5 py-1 rounded-full font-semibold transition">কিস্তি কিভাবে দিব?</button>
+      </div>
+
+      <!-- চ্যাট ইনপুট ফর্ম -->
+      <form onsubmit="handleChatSubmit(event)" class="p-2 bg-white border-t border-gray-200 flex items-center gap-1.5">
+        <input id="chat-input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." autocomplete="off" class="flex-grow px-3 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+        <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm shrink-0">
+          পাঠান
+        </button>
+      </form>
+    </div>
+
+    <!-- ফ্লোটিং ছোট গোলাকার চ্যাট বাটন (একদম ডান কোণায়) -->
+    <button onclick="toggleChat()" aria-label="লাইভ চ্যাট" title="লাইভ চ্যাট" class="relative w-12 h-12 sm:w-14 sm:h-14 bg-brand hover:bg-brand-dark text-white rounded-full shadow-2xl flex items-center justify-center border-2 border-white/30 transition transform hover:scale-105 active:scale-95">
+      <svg class="w-6 h-6 sm:w-7 sm:h-7 text-brand-accent" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+      </svg>
+      <span class="w-3 h-3 bg-emerald-400 rounded-full absolute top-0.5 right-0.5 border-2 border-brand"></span>
+    </button>
+  </div>
+
+  <script>
+    /* ===== কনফিগারেশন ও সেটিংস ===== */
+    const INTEREST_RATE = 3; // বার্ষিক বা ফ্ল্যাট ইন্টারেস্ট রেট (%)
+    const DEPOSIT_RATE = 10; // জামানত হার ১০% (৫,০০০ টাকায় ৫০০ টাকা, ১০,০০০ টাকায় ১,০০০ টাকা)
+    const MIN_LOAN = 5000;
+    const MAX_LOAN = 200000;
+    const DURATIONS = [3, 6, 9, 12, 18, 24];
+    const PAYMENT_NUMBERS = {
+      bkash: '01631496372',
+      nagad: '01631496372',
+      rocket: '01631496372'
+    };
+
+    /* ===== হেল্পার ফাংশন ===== */
+    const $ = selector => document.querySelector(selector);
+    const esc = str => String(str || '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+    
+    // বাংলা সংখ্যা ও দশমিক ফরম্যাটিং
+    const toBnNum = (num, decimals = 0) => {
+      return Number(num).toLocaleString('bn-BD', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    };
+
+    // ইংরেজি তারিখ ফরম্যাট (Dec 18, 2026)
+    const formatScheduleDate = (dateObj) => {
+      return dateObj.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    };
+
+    // লোন হিসাব করার ফাংশন
+    const calculateLoan = (amount, months) => {
+      const totalInterest = amount * (INTEREST_RATE / 100);
+      const totalPayable = amount + totalInterest;
+      const monthlyEMI = totalPayable / months;
+      const depositAmount = amount * (DEPOSIT_RATE / 100);
+      return {
+        amount,
+        months,
+        totalInterest,
+        totalPayable,
+        monthlyEMI,
+        depositAmount,
+        principalPerMonth: amount / months,
+        interestPerMonth: totalInterest / months
+      };
+    };
+
+    const STATUS_LABELS = {
+      pending: { text: 'অপেক্ষমাণ', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+      approved: { text: 'চালু', cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      rejected: { text: 'বাতিল', cls: 'bg-red-100 text-red-800 border-red-200' },
+      completed: { text: 'পরিশোধিত', cls: 'bg-blue-100 text-blue-800 border-blue-200' }
+    };
+
+    /* ===== স্টেট ও লোকাল স্টোরেজ ম্যানেজমেন্ট ===== */
+    let DB = {
+      users: [
+        { u: 'admin', p: 'admin123', name: 'অ্যাডমিন', phone: '01700000000', nid: '1234567890', role: 'admin' }
+      ],
+      loans: []
+    };
+
+    try {
+      const savedData = localStorage.getItem('pasheachi_red_db');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed && Array.isArray(parsed.users) && Array.isArray(parsed.loans)) {
+          DB = parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Storage read error', e);
+    }
+
+    const saveDB = () => {
+      try {
+        localStorage.setItem('pasheachi_red_db', JSON.stringify(DB));
+      } catch (e) {
+        console.error('Storage save error', e);
+      }
+    };
+
+    let currentUser = null;
+    let currentView = 'home';
+    let selectedLoanId = null;
+    let selectedGateway = 'bkash';
+
+    try {
+      const sessionUser = sessionStorage.getItem('pasheachi_user');
+      if (sessionUser) {
+        currentUser = sessionUser;
+        currentView = 'dash';
+      }
+    } catch (e) {}
+
+    const getUser = () => DB.users.find(x => x.u === currentUser);
+
+    function showToast(msg, isError = false) {
+      const container = $('#toast-container');
+      const el = document.createElement('div');
+      el.className = `px-5 py-2.5 rounded-xl shadow-lg text-white text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 ${isError ? 'bg-red-700' : 'bg-neutral-900'}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      requestAnimationFrame(() => {
+        el.classList.remove('translate-y-2', 'opacity-0');
+      });
+      setTimeout(() => {
+        el.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => el.remove(), 300);
+      }, 2500);
+    }
+
+    function go(viewName) {
+      currentView = viewName;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function logout() {
+      currentUser = null;
+      try { sessionStorage.removeItem('pasheachi_user'); } catch (e) {}
+      showToast('সফলভাবে লগআউট হয়েছে');
+      go('home');
+    }
+
+    function copyText(text) {
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+        showToast('নম্বর কপি করা হয়েছে: ' + text);
+      } catch (err) {
+        showToast('কপি করা যায়নি', true);
+      }
+      document.body.removeChild(temp);
+    }
+
+    /* ===== মেইন রাউটার ও রেন্ডার ===== */
+    function render() {
+      const u = currentUser && getUser();
+      if (currentUser && !u) {
+        currentUser = null;
+        currentView = 'home';
+      }
+
+      // নেভিগেশন লিংক আপডেট
+      const navEl = $('#nav-links');
+      if (u) {
+        navEl.innerHTML = `
+          <button onclick="go('dash')" class="text-xs sm:text-base font-semibold hover:text-brand-accent transition px-2 py-1.5 rounded-lg bg-white/10 sm:bg-transparent">ড্যাশবোর্ড</button>
+          <span class="hidden md:inline text-sm bg-brand-dark px-3 py-1 rounded-full border border-white/20">${esc(u.name)}</span>
+          <button onclick="logout()" class="bg-white/15 hover:bg-white/25 border border-white/30 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition">লগআউট</button>
+        `;
+      } else {
+        navEl.innerHTML = `
+          <button onclick="go('login')" class="border border-white/40 hover:bg-white/10 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 rounded-lg transition">লগইন</button>
+          <button onclick="go('reg')" class="bg-brand-accent hover:bg-amber-400 text-neutral-900 text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 rounded-lg shadow-sm transition">নতুন অ্যাকাউন্ট</button>
+        `;
+      }
+
+      if (u && currentView === 'dash') return u.role === 'admin' ? renderAdmin() : renderDashboard(u);
+      if (u && currentView === 'sum') return renderLoanSummary(u);
+      if (u && currentView === 'pay') return renderPayment(u);
+      if (currentView === 'login') return renderLogin();
+      if (currentView === 'reg') return renderRegister();
+      renderHome();
+    }
+
+    /* ===== ১. হোম পেজ ও ক্যালকুলেটর ===== */
+    function renderHome() {
+      $('#app').innerHTML = `
+        <!-- হিরো সেকশন -->
+        <div class="bg-brand text-white pt-6 pb-12 sm:pt-10 sm:pb-16">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6">
+            <!-- শীর্ষ স্লোগান বার -->
+            <div class="text-center mb-6 sm:mb-10">
+              <div class="inline-block bg-brand-dark/90 border border-white/20 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full shadow-md">
+                <span class="text-brand-accent font-bold text-sm sm:text-2xl tracking-wide">আপনাদের বিশ্বাস আমাদের আস্থা</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 lg:gap-10 items-center">
+              <div class="lg:col-span-6 space-y-3.5 sm:space-y-4 text-center lg:text-left">
+                <span class="inline-block bg-brand-dark text-brand-accent text-xs sm:text-sm font-semibold px-3 py-1 rounded-full border border-white/15">মাত্র ৩% ইন্টারেস্ট রেট</span>
+                <h1 class="text-2xl sm:text-4xl lg:text-5xl font-bold leading-snug sm:leading-tight">প্রয়োজনের সময় সবসময় পাশে আছি</h1>
+                <p class="text-red-100 text-sm sm:text-lg leading-relaxed">
+                  ছোট ব্যবসা, চিকিৎসা, পড়াশোনা বা জরুরি প্রয়োজনে সহজ কিস্তিতে লোন নিন। কত টাকা নিলে মাসে কত দিতে হবে, ক্যালকুলেটরে এখনই হিসাব করে নিন।
+                </p>
+                <div class="pt-2 flex flex-col sm:flex-row justify-center lg:justify-start gap-3">
+                  <button onclick="go('${currentUser ? 'dash' : 'reg'}')" class="w-full sm:w-auto bg-brand-accent hover:bg-amber-400 text-neutral-900 font-bold px-6 py-3 rounded-xl shadow-lg transition text-sm sm:text-base">এখনই আবেদন করুন</button>
+                  <button onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl border border-white/25 transition text-sm sm:text-base">নিয়মাবলী দেখুন</button>
+                </div>
+              </div>
+
+              <!-- ইন্টারেক্টিভ লোন ক্যালকুলেটর -->
+              <div class="lg:col-span-6">
+                <div class="bg-white text-gray-800 rounded-2xl p-5 sm:p-7 shadow-2xl border border-gray-100">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900">আপনার কিস্তি কত হবে?</h3>
+                    <span class="text-xs font-semibold bg-brand-light text-brand px-2.5 py-1 rounded-full">তাৎক্ষণিক হিসাব</span>
+                  </div>
+
+                  <div class="space-y-4">
+                    <div>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label for="calc-amount" class="text-sm font-semibold text-gray-700">লোনের পরিমাণ</label>
+                        <span class="text-lg font-bold text-brand">৳ <span id="disp-amount">৫,০০০</span></span>
+                      </div>
+                      <input type="range" id="calc-amount" min="${MIN_LOAN}" max="${MAX_LOAN}" step="1000" value="5000" oninput="updateCalculator()" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand">
+                      <div class="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>৳ ৫,০০০</span>
+                        <span>৳ ২,০০,০০০</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="calc-months" class="block text-sm font-semibold text-gray-700 mb-1.5">কত মাসে শোধ করবেন</label>
+                      <select id="calc-months" onchange="updateCalculator()" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl bg-white text-gray-800 font-medium focus:outline-none focus:border-brand">
+                        ${DURATIONS.map(m => `<option value="${m}" ${m === 3 ? 'selected' : ''}>${toBnNum(m)} মাস</option>`).join('')}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 mt-4">
+                    <div class="text-sm text-gray-500">প্রতি মাসের কিস্তি</div>
+                    <div class="text-3xl sm:text-4xl font-bold text-brand mt-0.5" id="disp-emi">৳ ১,৭১৭</div>
+                    
+                    <div class="mt-3 pt-3 border-t border-dashed border-gray-300 space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">ইন্টারেস্ট রেট:</span>
+                        <span class="font-bold text-gray-800">৳ ${toBnNum(INTEREST_RATE)}%</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">মোট ইন্টারেস্ট:</span>
+                        <span class="font-bold text-gray-800" id="disp-interest">৳ ১৫০</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">মোট পরিশোধযোগ্য:</span>
+                        <span class="font-bold text-brand" id="disp-total">৳ ৫,১৫০</span>
+                      </div>
+                      <div class="flex justify-between pt-1 border-t border-dashed border-gray-200">
+                        <span class="text-gray-700 font-semibold">জামানত (১০%):</span>
+                        <span class="font-bold text-pink-600" id="disp-deposit">৳ ৫০০</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button onclick="go('${currentUser ? 'dash' : 'reg'}')" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-xl shadow-md transition text-base mt-4">
+                    আবেদন শুরু করুন →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- কেন পাশে আছি -->
+        <section class="py-12 max-w-5xl mx-auto px-4 sm:px-6">
+          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">কেন পাশে আছি সেরা?</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div class="w-10 h-10 rounded-xl bg-brand-light text-brand font-bold flex items-center justify-center mb-3 text-lg">১</div>
+              <h4 class="text-lg font-bold text-gray-900 mb-1">স্বল্প ইন্টারেস্ট রেট</h4>
+              <p class="text-gray-600 text-sm leading-relaxed">মাত্র ৩% ফ্ল্যাট ইন্টারেস্ট রেটে লোন সুবিধা। কোনো লুকানো চার্জ বা অতিরিক্ত ফি নেই।</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div class="w-10 h-10 rounded-xl bg-brand-light text-brand font-bold flex items-center justify-center mb-3 text-lg">২</div>
+              <h4 class="text-lg font-bold text-gray-900 mb-1">পরিষ্কার অ্যামাউন্ট বিস্তারিত</h4>
+              <p class="text-gray-600 text-sm leading-relaxed">আসল, ইন্টারেস্ট এবং জামানতের পরিমাণ আবেদনের পরপরই বিস্তারিত দেখতে পাবেন।</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div class="w-10 h-10 rounded-xl bg-brand-light text-brand font-bold flex items-center justify-center mb-3 text-lg">৩</div>
+              <h4 class="text-lg font-bold text-gray-900 mb-1">সহজ কিস্তি পরিশোধ</h4>
+              <p class="text-gray-600 text-sm leading-relaxed">বিকাশ, নগদ বা রকেটের মাধ্যমে ঘরে বসেই মাসিক কিস্তি জমা দেওয়ার সুবিধা।</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- লোন পাবেন যেভাবে -->
+        <section id="how-it-works" class="py-8 max-w-5xl mx-auto px-4 sm:px-6">
+          <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">লোন পাবেন যেভাবে</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="border-l-4 border-brand pl-4">
+                <span class="text-xs font-bold text-brand uppercase">ধাপ ০১</span>
+                <h4 class="font-bold text-gray-900 text-lg">অ্যাকাউন্ট খুলুন</h4>
+                <p class="text-sm text-gray-600 mt-1">আপনার নাম, মোবাইল নম্বর ও এনআইডি দিয়ে রেজিস্ট্রেশন করুন।</p>
+              </div>
+              <div class="border-l-4 border-brand pl-4">
+                <span class="text-xs font-bold text-brand uppercase">ধাপ ০২</span>
+                <h4 class="font-bold text-gray-900 text-lg">আবেদন জমা দিন</h4>
+                <p class="text-sm text-gray-600 mt-1">লোনের পরিমাণ, মেয়াদ ও জামানতের তথ্য দিয়ে আবেদন করুন।</p>
+              </div>
+              <div class="border-l-4 border-brand pl-4">
+                <span class="text-xs font-bold text-brand uppercase">ধাপ ০৩</span>
+                <h4 class="font-bold text-gray-900 text-lg">অ্যাডমিন অনুমোদন</h4>
+                <p class="text-sm text-gray-600 mt-1">আমাদের টিম যাচাই করে আপনার লোনটি অনুমোদন করবে।</p>
+              </div>
+              <div class="border-l-4 border-brand pl-4">
+                <span class="text-xs font-bold text-brand uppercase">ধাপ ০৪</span>
+                <h4 class="font-bold text-gray-900 text-lg">কিস্তিতে পরিশোধ</h4>
+                <p class="text-sm text-gray-600 mt-1">নির্ধারিত সময়সূচি অনুযায়ী প্রতি মাসে কিস্তি জমা দিন।</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+      updateCalculator();
+    }
+
+    function updateCalculator() {
+      const amount = Number($('#calc-amount').value);
+      const months = Number($('#calc-months').value);
+      const res = calculateLoan(amount, months);
+
+      $('#disp-amount').textContent = toBnNum(amount);
+      $('#disp-emi').textContent = '৳ ' + toBnNum(res.monthlyEMI);
+      $('#disp-interest').textContent = '৳ ' + toBnNum(res.totalInterest, 2);
+      $('#disp-total').textContent = '৳ ' + toBnNum(res.totalPayable, 2);
+      $('#disp-deposit').textContent = '৳ ' + toBnNum(res.depositAmount);
+    }
+
+    /* ===== ২. লগইন ও রেজিস্ট্রেশন ===== */
+    function renderLogin() {
+      $('#app').innerHTML = `
+        <div class="max-w-md mx-auto px-4 py-12">
+          <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-1">লগইন করুন</h2>
+            <p class="text-sm text-gray-500 mb-6">আপনার অ্যাকাউন্টে প্রবেশ করতে তথ্য দিন</p>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">ইউজার নেম</label>
+                <input id="login-u" type="text" placeholder="আপনার ইউজার নেম" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">পাসওয়ার্ড</label>
+                <input id="login-p" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div id="login-err" class="text-sm text-red-600 font-medium min-h-[20px]"></div>
+              <button onclick="handleLogin()" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-xl shadow transition">লগইন করুন</button>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100 text-center space-y-2">
+              <p class="text-sm text-gray-600">অ্যাকাউন্ট নেই? <button onclick="go('reg')" class="text-brand font-bold hover:underline">নতুন অ্যাকাউন্ট খুলুন</button></p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleLogin() {
+      const uVal = $('#login-u').value.trim();
+      const pVal = $('#login-p').value;
+      const found = DB.users.find(x => x.u === uVal && x.p === pVal);
+      if (!found) {
+        $('#login-err').textContent = 'ইউজার নেম বা পাসওয়ার্ড সঠিক নয়।';
+        return;
+      }
+      currentUser = found.u;
+      try { sessionStorage.setItem('pasheachi_user', currentUser); } catch (e) {}
+      showToast('স্বাগতম, ' + found.name);
+      go('dash');
+    }
+
+    function renderRegister() {
+      $('#app').innerHTML = `
+        <div class="max-w-md mx-auto px-4 py-10">
+          <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-1">নতুন অ্যাকাউন্ট খুলুন</h2>
+            <p class="text-sm text-gray-500 mb-6">সঠিক তথ্য দিয়ে নিবন্ধন সম্পন্ন করুন</p>
+            
+            <div class="space-y-3.5">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">পুরো নাম</label>
+                <input id="reg-name" type="text" placeholder="যেমন: মোঃ রহিম উদ্দিন" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <input id="reg-phone" type="tel" placeholder="01XXXXXXXXX" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">এনআইডি (NID) নম্বর</label>
+                <input id="reg-nid" type="text" placeholder="জাতীয় পরিচয়পত্র নম্বর" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">ইউজার নেম</label>
+                <input id="reg-u" type="text" placeholder="ইংরেজিতে ইউজার নেম (যেমন: rahim12)" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label>
+                <input id="reg-p" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+              </div>
+              <div id="reg-err" class="text-sm text-red-600 font-medium min-h-[20px]"></div>
+              <button onclick="handleRegister()" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-xl shadow transition">অ্যাকাউন্ট তৈরি করুন</button>
+            </div>
+
+            <p class="mt-5 text-center text-sm text-gray-600">
+              আগেই অ্যাকাউন্ট আছে? <button onclick="go('login')" class="text-brand font-bold hover:underline">লগইন করুন</button>
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleRegister() {
+      const name = $('#reg-name').value.trim();
+      const phone = $('#reg-phone').value.trim();
+      const nid = $('#reg-nid').value.trim();
+      const u = $('#reg-u').value.trim();
+      const p = $('#reg-p').value;
+      const errEl = $('#reg-err');
+
+      if (!name || !phone || !nid || !u || !p) {
+        errEl.textContent = 'অনুগ্রহ করে সবগুলো ঘর পূরণ করুন।';
+        return;
+      }
+      if (!/^01\d{9}$/.test(phone)) {
+        errEl.textContent = 'সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01 দিয়ে শুরু)।';
+        return;
+      }
+      if (p.length < 6) {
+        errEl.textContent = 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।';
+        return;
+      }
+      if (DB.users.some(x => x.u.toLowerCase() === u.toLowerCase())) {
+        errEl.textContent = 'এই ইউজার নেমটি আগেই ব্যবহৃত হয়েছে। অন্যটি দিন।';
+        return;
+      }
+
+      DB.users.push({ u, p, name, phone, nid, role: 'user' });
+      saveDB();
+      currentUser = u;
+      try { sessionStorage.setItem('pasheachi_user', currentUser); } catch (e) {}
+      showToast('অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!');
+      go('dash');
+    }
+
+    /* ===== ৩. ইউজার ড্যাশবোর্ড ===== */
+    function renderDashboard(u) {
+      const userLoans = DB.loans.filter(l => l.u === u.u).slice().reverse();
+      const activeLoans = userLoans.filter(l => l.status === 'approved');
+      const totalDue = activeLoans.reduce((sum, l) => sum + (l.totalPayable - l.paid * l.monthlyEMI), 0);
+      const monthlyTotal = activeLoans.reduce((sum, l) => sum + l.monthlyEMI, 0);
+
+      $('#app').innerHTML = `
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+            <div>
+              <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">স্বাগতম, ${esc(u.name)}</h2>
+              <p class="text-sm text-gray-500">আপনার লোন আবেদন ও কিস্তির সকল তথ্য এখানে পাবেন</p>
+            </div>
+          </div>
+
+          <!-- স্ট্যাটাস কার্ডস -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">মোট আবেদন</span>
+              <b class="text-2xl font-bold text-gray-900 mt-1 block">${toBnNum(userLoans.length)} টি</b>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">চালু লোন</span>
+              <b class="text-2xl font-bold text-emerald-700 mt-1 block">${toBnNum(activeLoans.length)} টি</b>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">মোট বাকি টাকা</span>
+              <b class="text-2xl font-bold text-brand mt-1 block">৳ ${toBnNum(totalDue)}</b>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">মাসিক কিস্তি</span>
+              <b class="text-2xl font-bold text-gray-900 mt-1 block">৳ ${toBnNum(monthlyTotal)}</b>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <!-- বাম পাশে: নতুন লোনের আবেদন ফর্ম -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <h3 class="text-xl font-bold text-gray-900 mb-1">নতুন লোনের আবেদন</h3>
+              <p class="text-xs text-gray-500 mb-4">সঠিক তথ্য দিয়ে নিচের ফর্মটি পূরণ করুন</p>
+
+              <div class="space-y-3.5">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">লোনের পরিমাণ (৳ ${toBnNum(MIN_LOAN)} – ${toBnNum(MAX_LOAN)})</label>
+                  <input id="app-amount" type="number" min="${MIN_LOAN}" max="${MAX_LOAN}" step="500" value="5000" oninput="previewApplication()" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand font-semibold">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">মেয়াদ (কত মাস)</label>
+                  <select id="app-months" onchange="previewApplication()" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-brand">
+                    ${DURATIONS.map(m => `<option value="${m}" ${m === 3 ? 'selected' : ''}>${toBnNum(m)} মাস</option>`).join('')}
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">লোনের কারণ</label>
+                  <input id="app-purpose" type="text" placeholder="যেমন: ছোট ব্যবসা বা জরুরি প্রয়োজন" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-brand">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">জামানত (১০% অটো হিসাব - ৳)</label>
+                  <input id="app-deposit" type="number" readonly value="500" class="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-300 rounded-xl font-bold text-brand cursor-not-allowed">
+                  <p class="text-xs text-gray-500 mt-1">৫,০০০ টাকায় ৫০০ টাকা এবং ১০,০০০ টাকায় ১,০০০ টাকা হারে নির্ধারিত।</p>
+                </div>
+
+                <!-- তাৎক্ষণিক প্রিভিউ বক্স -->
+                <div class="bg-brand-light/50 border border-red-200 rounded-xl p-3.5 space-y-1.5 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">ইন্টারেস্ট (৩%):</span>
+                    <b id="prev-int" class="text-gray-900">৳ ১৫০.০০</b>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">মোট পরিশোধযোগ্য:</span>
+                    <b id="prev-tot" class="text-brand">৳ ৫,১৫০.০০</b>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">মাসিক কিস্তি:</span>
+                    <b id="prev-emi" class="text-gray-900">৳ ১,৭১৭.০০</b>
+                  </div>
+                </div>
+
+                <div id="app-err" class="text-sm text-red-600 font-medium min-h-[18px]"></div>
+
+                <button onclick="submitLoanApplication()" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-xl shadow transition">
+                  আবেদন জমা দিন
+                </button>
+              </div>
+            </div>
+
+            <!-- ডান পাশে: আমার লোনসমূহ তালিকা -->
+            <div class="lg:col-span-7 space-y-4">
+              <h3 class="text-xl font-bold text-gray-900">আমার লোনসমূহ</h3>
+              ${userLoans.length ? `
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[520px]">
+                      <thead>
+                        <tr class="bg-brand-light text-brand text-sm border-b border-red-100">
+                          <th class="py-3 px-4 font-bold">তারিখ ও কারণ</th>
+                          <th class="py-3 px-4 font-bold">পরিমাণ</th>
+                          <th class="py-3 px-4 font-bold">কিস্তি</th>
+                          <th class="py-3 px-4 font-bold">অবস্থা</th>
+                          <th class="py-3 px-4 font-bold text-right">বিস্তারিত</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 text-sm">
+                        ${userLoans.map(l => {
+                          const st = STATUS_LABELS[l.status] || STATUS_LABELS.pending;
+                          return `
+                            <tr class="hover:bg-gray-50 transition">
+                              <td class="py-3.5 px-4">
+                                <div class="font-semibold text-gray-900">${esc(l.purpose)}</div>
+                                <div class="text-xs text-gray-500">${esc(l.date)} · জামানত: ৳${toBnNum(l.deposit)}</div>
+                              </td>
+                              <td class="py-3.5 px-4 font-bold text-gray-900">৳ ${toBnNum(l.amount)}</td>
+                              <td class="py-3.5 px-4">
+                                <div class="font-semibold">৳ ${toBnNum(l.monthlyEMI)} × ${toBnNum(l.months)}</div>
+                                <div class="text-xs text-gray-500">পরিশোধ: ${toBnNum(l.paid)}/${toBnNum(l.months)}</div>
+                              </td>
+                              <td class="py-3.5 px-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${st.cls}">${st.text}</span>
+                              </td>
+                              <td class="py-3.5 px-4 text-right">
+                                <button onclick="selectedLoanId=${l.id};go('sum')" class="bg-white hover:bg-brand hover:text-white text-brand border border-brand text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                                  বিস্তারিত দেখুন
+                                </button>
+                              </td>
+                            </tr>
+                          `;
+                        }).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ` : `
+                <div class="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+                  <p class="text-gray-500 font-medium">আপনার এখনো কোনো লোনের আবেদন নেই।</p>
+                  <p class="text-sm text-gray-400 mt-1">বাম পাশের ফর্মটি পূরণ করে প্রথম আবেদন জমা দিন।</p>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+      previewApplication();
+    }
+
+    function previewApplication() {
+      const amount = Number($('#app-amount').value) || 0;
+      const months = Number($('#app-months').value) || 3;
+      if (amount >= MIN_LOAN) {
+        const res = calculateLoan(amount, months);
+        $('#app-deposit').value = Math.round(res.depositAmount);
+        $('#prev-int').textContent = '৳ ' + toBnNum(res.totalInterest, 2);
+        $('#prev-tot').textContent = '৳ ' + toBnNum(res.totalPayable, 2);
+        $('#prev-emi').textContent = '৳ ' + toBnNum(res.monthlyEMI, 2);
+      } else {
+        $('#app-deposit').value = amount > 0 ? Math.round(amount * (DEPOSIT_RATE / 100)) : 0;
+        $('#prev-int').textContent = '–';
+        $('#prev-tot').textContent = '–';
+        $('#prev-emi').textContent = '–';
+      }
+    }
+
+    function submitLoanApplication() {
+      const amount = Number($('#app-amount').value);
+      const months = Number($('#app-months').value);
+      const purpose = $('#app-purpose').value.trim();
+      const errEl = $('#app-err');
+
+      if (amount < MIN_LOAN || amount > MAX_LOAN) {
+        errEl.textContent = `লোনের পরিমাণ ৳ ${toBnNum(MIN_LOAN)} থেকে ৳ ${toBnNum(MAX_LOAN)} এর মধ্যে হতে হবে।`;
+        return;
+      }
+      if (!purpose) {
+        errEl.textContent = 'লোনের কারণ উল্লেখ করুন।';
+        return;
+      }
+
+      const calcRes = calculateLoan(amount, months);
+      const deposit = Math.round(calcRes.depositAmount);
+      const newLoan = {
+        id: Date.now(),
+        u: currentUser,
+        amount: calcRes.amount,
+        months: calcRes.months,
+        interestRate: INTEREST_RATE,
+        totalInterest: calcRes.totalInterest,
+        totalPayable: calcRes.totalPayable,
+        monthlyEMI: calcRes.monthlyEMI,
+        principalPerMonth: calcRes.principalPerMonth,
+        interestPerMonth: calcRes.interestPerMonth,
+        deposit: deposit,
+        purpose: purpose,
+        status: 'pending',
+        paid: 0,
+        requests: [],
+        createdAt: new Date().toISOString(),
+        date: new Date().toLocaleDateString('bn-BD')
+      };
+
+      DB.loans.push(newLoan);
+      saveDB();
+      selectedLoanId = newLoan.id;
+      showToast('লোনের আবেদন সফলভাবে জমা হয়েছে!');
+      go('sum'); // সরাসরি অ্যামাউন্ট বিস্তারিত পেজে নিয়ে যাবে
+    }
+
+    /* ===== ৪. অ্যামাউন্ট বিস্তারিত (Loan Summary) ===== */
+    function renderLoanSummary(u) {
+      const loan = DB.loans.find(x => x.id === selectedLoanId && (x.u === u.u || u.role === 'admin'));
+      if (!loan) return go('dash');
+
+      const st = STATUS_LABELS[loan.status] || STATUS_LABELS.pending;
+      const baseDate = new Date(loan.startDate || loan.createdAt || loan.id);
+
+      // পরিশোধের সময়সূচি তৈরি
+      let scheduleHTML = '';
+      for (let i = 1; i <= loan.months; i++) {
+        const dueDate = new Date(baseDate);
+        dueDate.setMonth(dueDate.getMonth() + i);
+        const isPaid = i <= loan.paid;
+
+        scheduleHTML += `
+          <div class="bg-white rounded-xl border border-gray-200 border-l-4 ${isPaid ? 'border-l-emerald-600' : 'border-l-brand'} p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-gray-800 text-base">${formatScheduleDate(dueDate)}</span>
+                ${isPaid ? '<span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">পরিশোধিত</span>' : ''}
+              </div>
+              <span class="font-bold text-gray-900 text-base">৳${toBnNum(loan.monthlyEMI, 2)}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 mt-2 pt-2 border-t border-dashed border-gray-100">
+              <span>আসল: ৳${toBnNum(loan.principalPerMonth, 2)}</span>
+              <span>ইন্টারেস্ট: ৳${toBnNum(loan.interestPerMonth, 2)}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      const pendingRequests = (loan.requests || []).length;
+      const hasDepositPaid = Boolean(loan.depositTrx);
+
+      $('#app').innerHTML = `
+        <!-- সাব-হেডার বার -->
+        <div class="bg-brand-dark text-white py-3.5 px-4 shadow-inner">
+          <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <button onclick="go('dash')" class="flex items-center gap-1.5 text-sm font-semibold hover:text-brand-accent transition">
+              <span class="text-lg leading-none">←</span> ফিরে যান
+            </button>
+            <span class="font-bold tracking-wider text-sm sm:text-base uppercase">LOAN APPLICATION</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold border ${st.cls}">${st.text}</span>
+          </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+          <!-- অ্যামাউন্ট বিস্তারিত সেকশন -->
+          <h2 class="text-2xl font-bold text-brand mb-4">অ্যামাউন্ট বিস্তারিত</h2>
+          
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm divide-y divide-gray-200 overflow-hidden">
+            <div class="px-5 py-3.5 flex justify-between items-center text-base">
+              <span class="text-gray-600">লোনের পরিমাণ:</span>
+              <span class="font-bold text-gray-900">৳${toBnNum(loan.amount, 2)}</span>
+            </div>
+            <div class="px-5 py-3.5 flex justify-between items-center text-base">
+              <span class="text-gray-600">ইন্টারেস্ট রেট:</span>
+              <span class="font-bold text-gray-900">৳${toBnNum(loan.interestRate || INTEREST_RATE)}%</span>
+            </div>
+            <div class="px-5 py-3.5 flex justify-between items-center text-base">
+              <span class="text-gray-600">মোট ইন্টারেস্ট:</span>
+              <span class="font-bold text-gray-900">৳${toBnNum(loan.totalInterest, 2)}</span>
+            </div>
+            <div class="px-5 py-3.5 flex justify-between items-center text-base bg-gray-50/70">
+              <span class="text-gray-700 font-medium">মোট পরিশোধযোগ্য:</span>
+              <span class="font-bold text-gray-900 text-lg">৳${toBnNum(loan.totalPayable, 2)}</span>
+            </div>
+            <div class="px-5 py-3.5 flex justify-between items-center text-base bg-brand-light/30">
+              <span class="text-gray-700 font-semibold">জামানত:</span>
+              <span class="font-bold text-brand text-lg">৳${toBnNum(loan.deposit, 2)}</span>
+            </div>
+
+            <!-- জামানতের ঠিক নিচেই বিকাশ (bKash) পেমেন্ট অংশ -->
+            ${loan.deposit > 0 ? `
+              <div class="p-5 bg-pink-50/60 border-t-2 border-pink-200">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="bg-[#e2136e] text-white text-xs font-bold px-2.5 py-1 rounded-md tracking-wide shadow-sm">bKash · বিকাশ</span>
+                    <span class="font-bold text-gray-900 text-base">বিকাশে জামানত জমা দিন</span>
+                  </div>
+                  ${hasDepositPaid ? `<span class="text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold px-2.5 py-1 rounded-full">✓ জমানত তথ্য জমা হয়েছে</span>` : `<span class="text-xs bg-pink-100 text-[#e2136e] font-bold px-2.5 py-1 rounded-full">জমানত: ৳${toBnNum(loan.deposit, 2)}</span>`}
+                </div>
+
+                ${hasDepositPaid ? `
+                  <div class="bg-white rounded-xl p-3.5 border border-pink-200 text-sm space-y-1">
+                    <div class="flex justify-between">
+                      <span class="text-gray-500">যে বিকাশ নম্বর থেকে পাঠানো হয়েছে:</span>
+                      <b class="text-gray-900 font-mono">${esc(loan.depositSender || 'N/A')}</b>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-500">বিকাশ ট্রানজেকশন আইডি (TrxID):</span>
+                      <b class="text-[#e2136e] font-mono uppercase">${esc(loan.depositTrx)}</b>
+                    </div>
+                    <p class="text-xs text-emerald-700 pt-1">আপনার জমানতের তথ্য সংরক্ষিত হয়েছে। অ্যাডমিন যাচাই করে লোন অনুমোদন করবেন।</p>
+                  </div>
+                ` : (u.role !== 'admin' ? `
+                  <p class="text-xs sm:text-sm text-gray-600 mb-3">
+                    নিচের বিকাশ পার্সোনাল নম্বরে <b>৳${toBnNum(loan.deposit, 2)}</b> টাকা <b>Send Money</b> করে আপনার বিকাশ নম্বর ও ট্রানজেকশন আইডি (TrxID) দিয়ে নিচের <b>"এগিয়ে যান"</b> বাটনে ক্লিক করুন।
+                  </p>
+
+                  <div class="bg-white p-3 rounded-xl border border-pink-200 flex items-center justify-between gap-2 mb-3">
+                    <div>
+                      <span class="text-[11px] text-gray-400 block">বিকাশ পার্সোনাল নম্বর</span>
+                      <span class="font-mono font-bold text-base sm:text-lg text-gray-900">${PAYMENT_NUMBERS.bkash}</span>
+                    </div>
+                    <button type="button" onclick="copyText('${PAYMENT_NUMBERS.bkash}')" class="bg-[#e2136e] hover:bg-[#c10e5d] text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow-sm transition">
+                      নম্বর কপি করুন
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-700 mb-1">আপনার বিকাশ নম্বর</label>
+                      <input id="dep-sender" type="tel" placeholder="01XXXXXXXXX" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-[#e2136e]">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-700 mb-1">বিকাশ ট্রানজেকশন আইডি (TrxID)</label>
+                      <input id="dep-trx" type="text" placeholder="যেমন: 9H7G6F5D4S" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm uppercase focus:outline-none focus:border-[#e2136e]">
+                    </div>
+                  </div>
+                  <div id="dep-err" class="text-xs text-red-600 font-semibold mt-1.5"></div>
+                ` : `<p class="text-xs text-gray-500">গ্রাহক এখনো বিকাশে জমানতের তথ্য জমা দেননি।</p>`)}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- অ্যাকশন বাটন ('এগিয়ে যান') -->
+          <div class="my-7 text-center">
+            ${loan.deposit > 0 && !hasDepositPaid && u.role !== 'admin' ? `
+              <button onclick="submitDepositBkash(${loan.id})" class="bg-brand hover:bg-brand-dark text-white font-bold px-10 py-3 rounded-xl shadow-md transition text-base">
+                এগিয়ে যান
+              </button>
+            ` : loan.status === 'approved' && u.role !== 'admin' ? `
+              <button onclick="go('pay')" class="bg-brand hover:bg-brand-dark text-white font-bold px-10 py-3 rounded-xl shadow-md transition text-base">
+                এগিয়ে যান (কিস্তি জমা দিন)
+              </button>
+              ${pendingRequests > 0 ? `<p class="text-xs text-amber-700 font-medium mt-2">আপনার ${toBnNum(pendingRequests)}টি কিস্তির জমা অ্যাডমিন যাচাইয়ের অপেক্ষায় আছে।</p>` : ''}
+            ` : loan.status === 'pending' ? `
+              <div class="inline-block bg-amber-50 border border-amber-200 text-amber-800 px-5 py-3 rounded-xl text-sm font-medium">
+                আবেদনটি বর্তমানে অপেক্ষমাণ আছে। অ্যাডমিন অনুমোদন করলে <b>"এগিয়ে যান"</b> বাটনের মাধ্যমে কিস্তি জমা দিতে পারবেন।
+              </div>
+            ` : loan.status === 'completed' ? `
+              <div class="inline-block bg-blue-50 border border-blue-200 text-blue-800 px-5 py-3 rounded-xl text-sm font-bold">
+                এই লোনের সকল কিস্তি সফলভাবে পরিশোধ করা হয়েছে!
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- পরিশোধের সময়সূচি -->
+          <div class="mt-8">
+            <h3 class="text-xl font-bold text-brand mb-4">পরিশোধের সময়সূচি</h3>
+            <div class="space-y-3">
+              ${scheduleHTML}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function submitDepositBkash(loanId) {
+      const sender = $('#dep-sender').value.trim();
+      const trx = $('#dep-trx').value.trim().toUpperCase();
+      const errEl = $('#dep-err');
+      const loan = DB.loans.find(x => x.id === loanId);
+
+      if (!/^01\d{9}$/.test(sender)) {
+        errEl.textContent = 'সঠিক ১১ সংখ্যার বিকাশ নম্বর দিন (01 দিয়ে শুরু)।';
+        return;
+      }
+      if (trx.length < 5) {
+        errEl.textContent = 'সঠিক বিকাশ ট্রানজেকশন আইডি (TrxID) লিখুন।';
+        return;
+      }
+
+      loan.depositSender = sender;
+      loan.depositTrx = trx;
+      saveDB();
+      showToast('বিকাশে জমানত জমার তথ্য সফলভাবে সংরক্ষিত হয়েছে!');
+      renderLoanSummary(getUser());
+    }
+
+    /* ===== ৫. কিস্তি জমা (Payment Submission) ===== */
+    function renderPayment(u) {
+      const loan = DB.loans.find(x => x.id === selectedLoanId && x.u === u.u && x.status === 'approved');
+      if (!loan) return go('dash');
+
+      const gateways = {
+        bkash: 'বিকাশ (bKash)',
+        nagad: 'নগদ (Nagad)',
+        rocket: 'রকেট (Rocket)'
+      };
+
+      $('#app').innerHTML = `
+        <div class="max-w-md mx-auto px-4 py-10">
+          <button onclick="go('sum')" class="mb-4 text-sm font-semibold text-gray-600 hover:text-brand flex items-center gap-1">
+            ← অ্যামাউন্ট বিস্তারিত-এ ফিরে যান
+          </button>
+
+          <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-md border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-1">কিস্তি জমা দিন</h2>
+            <p class="text-sm text-gray-500 mb-5">${toBnNum(loan.paid + 1)} নং কিস্তি পরিশোধের তথ্য দিন</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">কিস্তির পরিমাণ</label>
+                <input type="text" value="৳ ${toBnNum(loan.monthlyEMI, 2)}" readonly class="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-300 rounded-xl font-bold text-brand">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">পেমেন্ট মাধ্যম বেছে নিন</label>
+                <div class="grid grid-cols-3 gap-2">
+                  ${Object.keys(gateways).map(k => `
+                    <button type="button" onclick="selectedGateway='${k}';renderPayment(getUser())" class="py-2.5 px-2 rounded-xl border text-xs sm:text-sm font-bold transition ${selectedGateway === k ? 'border-brand bg-brand-light text-brand' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'}">
+                      ${gateways[k].split(' ')[0]}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">${gateways[selectedGateway]} পার্সোনাল নম্বর (Send Money)</label>
+                <div class="flex gap-2">
+                  <input type="text" value="${PAYMENT_NUMBERS[selectedGateway]}" readonly class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl font-mono font-bold text-gray-800">
+                  <button type="button" onclick="copyText('${PAYMENT_NUMBERS[selectedGateway]}')" class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-xs font-bold rounded-xl transition">কপি</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">ট্রানজেকশন আইডি (TrxID)</label>
+                <input id="pay-trx" type="text" placeholder="যেমন: 9H7G6F5D4S" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl uppercase focus:outline-none focus:border-brand">
+              </div>
+
+              <div id="pay-err" class="text-sm text-red-600 font-medium min-h-[18px]"></div>
+
+              <button onclick="submitInstallmentPayment(${loan.id})" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-xl shadow transition">
+                পেমেন্ট জমা নিশ্চিত করুন
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function submitInstallmentPayment(loanId) {
+      const trx = $('#pay-trx').value.trim();
+      const errEl = $('#pay-err');
+      const loan = DB.loans.find(x => x.id === loanId);
+
+      if (trx.length < 5) {
+        errEl.textContent = 'সঠিক ট্রানজেকশন আইডি (TrxID) লিখুন।';
+        return;
+      }
+
+      loan.requests = loan.requests || [];
+      loan.requests.push({
+        gateway: selectedGateway,
+        trxId: trx,
+        date: new Date().toLocaleDateString('bn-BD')
+      });
+
+      saveDB();
+      showToast('কিস্তি জমার তথ্য পাঠানো হয়েছে! অ্যাডমিন যাচাই করবেন।');
+      go('sum');
+    }
+
+    /* ===== ৬. অ্যাডমিন প্যানেল ===== */
+    function renderAdmin() {
+      const allLoans = DB.loans.slice().reverse();
+      const pendingCount = DB.loans.filter(l => l.status === 'pending').length;
+      const approvedLoans = DB.loans.filter(l => l.status === 'approved' || l.status === 'completed');
+      const totalDisbursed = approvedLoans.reduce((s, l) => s + l.amount, 0);
+      const totalCollected = approvedLoans.reduce((s, l) => s + (l.paid * l.monthlyEMI), 0);
+      const totalDepositsReceived = DB.loans.filter(l => l.depositTrx).reduce((s, l) => s + Number(l.deposit || 0), 0);
+
+      $('#app').innerHTML = `
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">অ্যাডমিন কন্ট্রোল প্যানেল</h2>
+              <p class="text-sm text-gray-500">কে লোন চেয়েছে, কে টাকা পাঠিয়েছে এবং কাকে অ্যাপ্রুভ করবেন তা এখান থেকে নিয়ন্ত্রণ করুন</p>
+            </div>
+            <button onclick="toggleAdminPassBox()" class="bg-gray-900 hover:bg-gray-800 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition">
+              পাসওয়ার্ড পরিবর্তন করুন
+            </button>
+          </div>
+
+          <!-- অ্যাডমিন পাসওয়ার্ড পরিবর্তন বক্স -->
+          <div id="admin-pass-box" class="hidden bg-white p-4 sm:p-5 rounded-2xl border border-gray-300 shadow-sm mb-6">
+            <h4 class="font-bold text-gray-900 text-sm mb-3">নতুন অ্যাডমিন পাসওয়ার্ড সেট করুন</h4>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <input id="new-admin-pass" type="password" placeholder="নতুন পাসওয়ার্ড লিখুন (কমপক্ষে ৬ অক্ষর)" class="flex-grow px-3.5 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-brand">
+              <button onclick="changeAdminPassword()" class="bg-brand hover:bg-brand-dark text-white text-sm font-bold px-5 py-2 rounded-xl transition">সেভ করুন</button>
+            </div>
+          </div>
+
+          <!-- অ্যাডমিন সামারি কার্ড -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">অপেক্ষমাণ আবেদন</span>
+              <b class="text-2xl font-bold text-amber-600 mt-1 block">${toBnNum(pendingCount)} টি</b>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">মোট লোন অনুমোদিত</span>
+              <b class="text-2xl font-bold text-gray-900 mt-1 block">৳ ${toBnNum(totalDisbursed)}</b>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">জমানত ও কিস্তি জমা</span>
+              <b class="text-2xl font-bold text-emerald-700 mt-1 block">৳ ${toBnNum(totalDepositsReceived + totalCollected)}</b>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+              <span class="text-xs sm:text-sm text-gray-500 block">মোট গ্রাহক</span>
+              <b class="text-2xl font-bold text-brand mt-1 block">${toBnNum(DB.users.filter(u => u.role !== 'admin').length)} জন</b>
+            </div>
+          </div>
+
+          <h3 class="text-xl font-bold text-gray-900 mb-3">গ্রাহকদের লোন আবেদন ও পেমেন্ট তালিকা</h3>
+          ${allLoans.length ? `
+            <!-- মোবাইল কার্ড ভিউ (স্মার্টফোনের জন্য) -->
+            <div class="grid grid-cols-1 gap-4 md:hidden">
+              ${allLoans.map(l => {
+                const applicant = DB.users.find(u => u.u === l.u) || { name: l.u, phone: '' };
+                const st = STATUS_LABELS[l.status] || STATUS_LABELS.pending;
+                const reqs = l.requests || [];
+                return `
+                  <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                      <div>
+                        <div class="font-bold text-gray-900 text-base">${esc(applicant.name)}</div>
+                        <div class="text-xs text-gray-500">মোবাইল: ${esc(applicant.phone)} · NID: ${esc(applicant.nid || 'N/A')}</div>
+                        <div class="text-[11px] text-gray-400">তারিখ: ${esc(l.date)}</div>
+                      </div>
+                      <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${st.cls}">${st.text}</span>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-3 text-xs space-y-1.5 border border-gray-100">
+                      <div class="flex justify-between"><span class="text-gray-500">লোনের পরিমাণ:</span><b class="text-gray-900">৳ ${toBnNum(l.amount)} (${toBnNum(l.months)} মাস)</b></div>
+                      <div class="flex justify-between"><span class="text-gray-500">জামানত (১০%):</span><b class="text-brand">৳ ${toBnNum(l.deposit)}</b></div>
+                      <div class="flex justify-between"><span class="text-gray-500">কিস্তি পরিশোধ:</span><b>${toBnNum(l.paid)} / ${toBnNum(l.months)} টি</b></div>
+                      <div class="text-gray-500 pt-1">কারণ: ${esc(l.purpose)}</div>
+                      ${l.depositTrx
+                        ? `<div class="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-2 mt-1">
+                             <b>✓ জামানতের টাকা পাঠিয়েছেন:</b><br>
+                             নম্বর: <span class="font-mono font-bold">${esc(l.depositSender || 'N/A')}</span> | TrxID: <span class="font-mono font-bold text-[#e2136e]">${esc(l.depositTrx)}</span>
+                           </div>`
+                        : `<div class="text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-1">⚠ এখনো জামানতের টাকা পাঠাননি</div>`}
+                    </div>
+
+                    ${l.status === 'pending' ? `
+                      <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="adminSetLoanStatus(${l.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">✓ অ্যাপ্রুভ (লোন দিব)</button>
+                        <button onclick="adminSetLoanStatus(${l.id}, 'rejected')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">✕ বাতিল (দিব না)</button>
+                      </div>
+                    ` : ''}
+
+                    ${l.status === 'approved' ? `
+                      ${reqs.map((r, idx) => `
+                        <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-xs">
+                          <div class="font-bold text-gray-800 uppercase mb-1.5">কিস্তি পাঠিয়েছেন (${esc(r.gateway)}): ${esc(r.trxId)}</div>
+                          <div class="grid grid-cols-2 gap-2">
+                            <button onclick="adminConfirmInstallment(${l.id}, ${idx})" class="bg-emerald-600 text-white py-1.5 rounded-lg font-bold">✓ টাকা পেয়েছি</button>
+                            <button onclick="adminRejectInstallment(${l.id}, ${idx})" class="bg-red-600 text-white py-1.5 rounded-lg font-bold">✕ পাইনি (বাতিল)</button>
+                          </div>
+                        </div>
+                      `).join('')}
+                      <button onclick="adminDirectPay(${l.id})" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold py-2.5 rounded-xl transition">
+                        + সরাসরি ১ কিস্তি জমা নিন
+                      </button>
+                    ` : ''}
+
+                    <button onclick="selectedLoanId=${l.id};go('sum')" class="w-full text-center text-xs text-brand font-bold py-1.5 border border-brand/20 rounded-xl hover:bg-brand-light/40">
+                      বিস্তারিত হিসাব দেখুন
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <!-- ডেস্কটপ টেবিল ভিউ (বড় স্ক্রিনের জন্য) -->
+            <div class="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[720px]">
+                  <thead>
+                    <tr class="bg-brand-light text-brand text-sm border-b border-red-100">
+                      <th class="py-3 px-4 font-bold">গ্রাহকের তথ্য</th>
+                      <th class="py-3 px-4 font-bold">লোন ও কে টাকা পাঠিয়েছে</th>
+                      <th class="py-3 px-4 font-bold">কিস্তি অগ্রগতি</th>
+                      <th class="py-3 px-4 font-bold">অবস্থা</th>
+                      <th class="py-3 px-4 font-bold text-right">অ্যাপ্রুভ / সিদ্ধান্ত</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 text-sm">
+                    ${allLoans.map(l => {
+                      const applicant = DB.users.find(u => u.u === l.u) || { name: l.u, phone: '' };
+                      const st = STATUS_LABELS[l.status] || STATUS_LABELS.pending;
+                      const reqs = l.requests || [];
+
+                      return `
+                        <tr class="hover:bg-gray-50 align-top">
+                          <td class="py-3.5 px-4">
+                            <div class="font-bold text-gray-900">${esc(applicant.name)}</div>
+                            <div class="text-xs text-gray-500">মোবাইল: ${esc(applicant.phone)}</div>
+                            <div class="text-xs text-gray-500">NID: ${esc(applicant.nid || 'N/A')}</div>
+                            <div class="text-xs text-gray-400 mt-0.5">তারিখ: ${esc(l.date)} · কারণ: ${esc(l.purpose)}</div>
+                          </td>
+                          <td class="py-3.5 px-4">
+                            <div class="font-bold text-gray-900">৳ ${toBnNum(l.amount)} <span class="text-xs font-normal text-gray-500">(${toBnNum(l.months)} মাস)</span></div>
+                            <div class="text-xs text-brand font-semibold">জামানত: ৳ ${toBnNum(l.deposit)}</div>
+                            ${l.depositTrx
+                              ? `<div class="text-[11px] bg-emerald-50 text-emerald-900 border border-emerald-200 rounded px-2 py-1 mt-1 font-mono inline-block">✓ টাকা পাঠিয়েছেন: <b>${esc(l.depositSender || '')}</b><br>bKash TrxID: <b class="text-[#e2136e]">${esc(l.depositTrx)}</b></div>`
+                              : `<div class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-0.5 mt-1 inline-block">এখনো জমানতের টাকা পাঠাননি</div>`}
+                            <div class="text-xs text-gray-500 mt-1">মোট ফেরত: ৳ ${toBnNum(l.totalPayable)}</div>
+                          </td>
+                          <td class="py-3.5 px-4">
+                            <div class="font-semibold">${toBnNum(l.paid)} / ${toBnNum(l.months)} কিস্তি</div>
+                            <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                              <div class="h-full bg-brand" style="width: ${(l.paid / l.months) * 100}%"></div>
+                            </div>
+                          </td>
+                          <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${st.cls}">${st.text}</span>
+                          </td>
+                          <td class="py-3.5 px-4 text-right space-y-1.5">
+                            ${l.status === 'pending' ? `
+                              <div class="flex justify-end gap-1.5">
+                                <button onclick="adminSetLoanStatus(${l.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow-sm">✓ অ্যাপ্রুভ (দিব)</button>
+                                <button onclick="adminSetLoanStatus(${l.id}, 'rejected')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow-sm">✕ বাতিল (দিব না)</button>
+                              </div>
+                            ` : ''}
+
+                            ${l.status === 'approved' ? `
+                              ${reqs.map((r, idx) => `
+                                <div class="bg-amber-50 border border-amber-200 p-2 rounded-lg text-left text-xs mb-1.5">
+                                  <div class="font-bold text-gray-800 uppercase">কিস্তি পাঠিয়েছেন (${esc(r.gateway)}): ${esc(r.trxId)}</div>
+                                  <div class="flex gap-1.5 mt-1">
+                                    <button onclick="adminConfirmInstallment(${l.id}, ${idx})" class="bg-emerald-600 text-white px-2 py-0.5 rounded font-bold">✓ পেয়েছি</button>
+                                    <button onclick="adminRejectInstallment(${l.id}, ${idx})" class="bg-red-600 text-white px-2 py-0.5 rounded font-bold">✕ বাতিল</button>
+                                  </div>
+                                </div>
+                              `).join('')}
+                              <button onclick="adminDirectPay(${l.id})" class="bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                                + ১ কিস্তি জমা নিন
+                              </button>
+                            ` : ''}
+
+                            <div>
+                              <button onclick="selectedLoanId=${l.id};go('sum')" class="text-xs text-brand font-bold hover:underline">
+                                বিস্তারিত দেখুন
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : `
+            <div class="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500">
+              এখনো কোনো গ্রাহক লোনের আবেদন করেননি।
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function toggleAdminPassBox() {
+      const box = $('#admin-pass-box');
+      if (box) box.classList.toggle('hidden');
+    }
+
+    function changeAdminPassword() {
+      const newPass = $('#new-admin-pass').value.trim();
+      if (newPass.length < 6) {
+        showToast('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে', true);
+        return;
+      }
+      const adminObj = DB.users.find(u => u.role === 'admin');
+      if (adminObj) {
+        adminObj.p = newPass;
+        saveDB();
+        showToast('অ্যাডমিন পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
+        toggleAdminPassBox();
+      }
+    }
+
+    function adminSetLoanStatus(id, newStatus) {
+      const loan = DB.loans.find(x => x.id === id);
+      if (!loan) return;
+      loan.status = newStatus;
+      if (newStatus === 'approved') {
+        loan.startDate = new Date().toISOString();
+      }
+      saveDB();
+      showToast(newStatus === 'approved' ? 'লোন অনুমোদন করা হয়েছে!' : 'লোন বাতিল করা হয়েছে।');
+      render();
+    }
+
+    function adminDirectPay(id) {
+      const loan = DB.loans.find(x => x.id === id);
+      if (!loan) return;
+      loan.paid += 1;
+      if (loan.paid >= loan.months) {
+        loan.status = 'completed';
+      }
+      saveDB();
+      showToast('১টি কিস্তি সফলভাবে যুক্ত হয়েছে');
+      render();
+    }
+
+    function adminConfirmInstallment(id, reqIdx) {
+      const loan = DB.loans.find(x => x.id === id);
+      if (!loan) return;
+      loan.requests.splice(reqIdx, 1);
+      adminDirectPay(id);
+    }
+
+    function adminRejectInstallment(id, reqIdx) {
+      const loan = DB.loans.find(x => x.id === id);
+      if (!loan) return;
+      loan.requests.splice(reqIdx, 1);
+      saveDB();
+      showToast('ভুল ট্রানজেকশন অনুরোধ বাতিল করা হয়েছে', true);
+      render();
+    }
+
+    /* ===== ৭. অ্যাডমিন কুইক লগইন ও অটো লাইভ চ্যাট লজিক ===== */
+    function quickAdminLogin() {
+      currentUser = 'admin';
+      try { sessionStorage.setItem('pasheachi_user', 'admin'); } catch (e) {}
+      showToast('অ্যাডমিন প্যানেলে প্রবেশ করেছেন');
+      go('dash');
+    }
+
+    function toggleChat() {
+      const win = $('#chat-window');
+      win.classList.toggle('hidden');
+      if (!win.classList.contains('hidden')) {
+        $('#chat-input').focus();
+      }
+    }
+
+    function sendQuickChat(text) {
+      $('#chat-input').value = text;
+      handleChatSubmit(new Event('submit'));
+    }
+
+    function appendChatMessage(text, isUser = false) {
+      const box = $('#chat-messages');
+      const wrap = document.createElement('div');
+      wrap.className = isUser ? 'flex justify-end' : 'flex items-start gap-2';
+
+      const bubble = document.createElement('div');
+      bubble.className = isUser
+        ? 'bg-brand text-white px-3.5 py-2.5 rounded-2xl rounded-tr-none shadow-sm max-w-[85%]'
+        : 'bg-white border border-gray-200 text-gray-800 px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] leading-relaxed';
+      bubble.innerHTML = text;
+
+      wrap.appendChild(bubble);
+      box.appendChild(wrap);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = $('#chat-input');
+      const userMsg = input.value.trim();
+      if (!userMsg) return;
+
+      appendChatMessage(esc(userMsg), true);
+      input.value = '';
+
+      // টাইপিং ইন্ডিকেটর দেখানো
+      const box = $('#chat-messages');
+      const typingId = 'typing-' + Date.now();
+      const typingEl = document.createElement('div');
+      typingEl.id = typingId;
+      typingEl.className = 'flex items-start gap-2';
+      typingEl.innerHTML = `<div class="bg-white border border-gray-200 text-gray-400 px-3.5 py-2 rounded-2xl rounded-tl-none text-xs italic">উত্তর লেখা হচ্ছে...</div>`;
+      box.appendChild(typingEl);
+      box.scrollTop = box.scrollHeight;
+
+      const reply = await getAutoChatReply(userMsg);
+      const tNode = document.getElementById(typingId);
+      if (tNode) tNode.remove();
+      appendChatMessage(reply, false);
+    }
+
+    async function getAutoChatReply(query) {
+      // প্রথমে Gemini API দিয়ে স্মার্ট উত্তর আনার চেষ্টা করবে, ব্যর্থ হলে লোকাল ইন্টেলিজেন্ট অটো-রিপ্লাই দিবে
+      const systemPrompt = `তুমি 'পাশে আছি' লোন ও কিস্তি ম্যানেজমেন্ট ওয়েবসাইটের কাস্টমার সাপোর্ট অ্যাসিস্ট্যান্ট। সবসময় ভদ্র, সংক্ষিপ্ত ও স্পষ্ট বাংলায় উত্তর দেবে।
+      তথ্যসমূহ:
+      - লোনের পরিমাণ: সর্বনিম্ন ৫,০০০ টাকা থেকে সর্বোচ্চ ২,০০,০০০ টাকা।
+      - ইন্টারেস্ট রেট: মাত্র ৩% ফ্ল্যাট রেট।
+      - মেয়াদ: ৩, ৬, ৯, ১২, ১৮ বা ২৪ মাস।
+      - জামানত: মোট লোনের ১০% (যেমন ৫,০০০ টাকায় ৫০০ টাকা) যা বিকাশ পার্সোনাল নম্বর 01631496372-এ পাঠিয়ে TrxID দিতে হয়।
+      - কিস্তি পরিশোধ: বিকাশ, নগদ বা রকেটের মাধ্যমে।
+      - লোন নেওয়ার নিয়ম: 'নতুন অ্যাকাউন্ট' খুলে আবেদন করলে অ্যাডমিন যাচাই করে অনুমোদন দেবেন।`;
+
+      try {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: query }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (aiText) return esc(aiText).replace(/\n/g, '<br>');
+        }
+      } catch (err) {
+        // অফলাইন বা নেটওয়ার্ক সমস্যায় নিচের রুল-ভিত্তিক অটো রিপ্লাই কাজ করবে
+      }
+
+      // ফলব্যাক রুল-ভিত্তিক তাৎক্ষণিক অটো রিপ্লাই
+      const q = query.toLowerCase();
+      if (q.includes('ইন্টারেস্ট') || q.includes('সুদ') || q.includes('জামানত') || q.includes('লাভ')) {
+        return `আমাদের ইন্টারেস্ট রেট মাত্র <b>৩%</b>। এছাড়া লোনের <b>১০% জামানত</b> (যেমন: ৫,০০০ টাকায় ৫০০ টাকা) বিকাশে (<b>${PAYMENT_NUMBERS.bkash}</b>) জমা দিতে হয়।`;
+      }
+      if (q.includes('কিস্তি') || q.includes('পেমেন্ট') || q.includes('বিকাশ') || q.includes('নগদ')) {
+        return `আপনি ঘরে বসেই <b>বিকাশ, নগদ বা রকেট</b> (<b>${PAYMENT_NUMBERS.bkash}</b>)-এর মাধ্যমে প্রতি মাসের কিস্তি পরিশোধ করতে পারবেন।`;
+      }
+      if (q.includes('কিভাবে') || q.includes('আবেদন') || q.includes('নিয়ম') || q.includes('পাবো') || q.includes('লোন')) {
+        return `লোন পেতে প্রথমে <b>"নতুন অ্যাকাউন্ট"</b> বাটনে ক্লিক করে আপনার নাম, মোবাইল ও এনআইডি দিয়ে রেজিস্ট্রেশন করুন। এরপর ড্যাশবোর্ড থেকে লোনের আবেদন জমা দিলে অ্যাডমিন যাচাই করে অনুমোদন দেবেন।`;
+      }
+      if (q.includes('নম্বর') || q.includes('যোগাযোগ') || q.includes('কল') || q.includes('ফোন')) {
+        return `আমাদের অফিসিয়াল বিকাশ/যোগাযোগ নম্বর: <b>${PAYMENT_NUMBERS.bkash}</b>। যেকোনো প্রয়োজনে এখানে মেসেজ করতে পারেন।`;
+      }
+      if (q.includes('হ্যালো') || q.includes('সালাম') || q.includes('hi') || q.includes('hello')) {
+        return `ওয়ালাইকুম আসসালাম! কেমন আছেন? লোন বা কিস্তি বিষয়ে কী জানতে চান বলুন, আমি সাহায্য করছি।`;
+      }
+      return `ধন্যবাদ আপনার মেসেজের জন্য! আমাদের এখানে <b>৫,০০০ থেকে ২,০০,০০০ টাকা</b> পর্যন্ত মাত্র <b>৩% ইন্টারেস্টে</b> সহজ কিস্তিতে লোন দেওয়া হয়। আবেদন করতে ওপরে <b>"নতুন অ্যাকাউন্ট"</b> বাটনে ক্লিক করুন।`;
+    }
+
+    // অ্যাপ শুরু করা
+    window.addEventListener('DOMContentLoaded', render);
+  </script>
+</body>
+</html>
