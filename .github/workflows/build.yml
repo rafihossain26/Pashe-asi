@@ -22,9 +22,8 @@ jobs:
           java-version: '17'
       - name: Build Android APK with Custom Icon
         run: |
-          sudo apt-get update && sudo apt-get install -y librsvg2-bin fonts-noto-core
-          mkdir android-app
-          mkdir android-app/www
+          pip install pillow
+          mkdir -p android-app/www
           cp index.html android-app/www/
           cd android-app
           npm init -y
@@ -32,27 +31,21 @@ jobs:
           npx cap init "Pashe Achi" "com.pasheachi.loan" --web-dir www
           npx cap add android
 
-          cat << 'EOF' > icon.svg
-          <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://w3.org">
-            <defs>
-              <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#B82925"/>
-                <stop offset="100%" stop-color="#7A1512"/>
-              </linearGradient>
-              <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#FFD166"/>
-                <stop offset="100%" stop-color="#E59819"/>
-              </linearGradient>
-            </defs>
-            <rect width="512" height="512" rx="115" fill="url(#bg)"/>
-            <circle cx="256" cy="256" r="190" fill="none" stroke="url(#gold)" stroke-width="14"/>
-            <circle cx="256" cy="256" r="165" fill="url(#gold)" opacity="0.15"/>
-            <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Noto Sans Bengali, sans-serif" font-weight="bold" font-size="180" fill="#FFFFFF">পা</text>
-            <circle cx="385" cy="135" r="24" fill="url(#gold)"/>
-          </svg>
-          EOF
+          python3 -c "
+          from PIL import Image, ImageDraw
+          img = Image.new('RGBA', (512, 512), (0, 0, 0, 0))
+          draw = ImageDraw.Draw(img)
+          draw.rounded_rectangle([(0, 0), (512, 512)], radius=110, fill='#9E1F1C')
+          draw.ellipse([(66, 66), (446, 446)], outline='#F5B041', width=18)
+          draw.ellipse([(96, 96), (416, 416)], fill='#B82925')
+          draw.rectangle([(185, 165), (218, 345)], fill='#FFFFFF')
+          draw.rectangle([(294, 165), (327, 345)], fill='#FFFFFF')
+          draw.rectangle([(185, 165), (327, 198)], fill='#FFFFFF')
+          draw.rectangle([(185, 245), (327, 278)], fill='#FFFFFF')
+          draw.ellipse([(370, 110), (415, 155)], fill='#FFD166')
+          img.save('icon.png')
+          "
 
-          rsvg-convert -w 512 -h 512 icon.svg -o icon.png
           for dir in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
             cp icon.png android/app/src/main/res/$dir/ic_launcher.png
             cp icon.png android/app/src/main/res/$dir/ic_launcher_round.png
