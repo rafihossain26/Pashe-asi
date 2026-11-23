@@ -20,8 +20,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Build Android APK
+      - name: Build Android APK with Custom Icon
         run: |
+          sudo apt-get update && sudo apt-get install -y librsvg2-bin
           mkdir android-app
           mkdir android-app/www
           cp index.html android-app/www/
@@ -30,6 +31,35 @@ jobs:
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           npx cap init "Pashe Achi" "com.pasheachi.loan" --web-dir www
           npx cap add android
+
+          # ওয়েবসাইটের লাল-সোনালি থিমে কাস্টম আইকন তৈরি
+          cat << 'EOF' > icon.svg
+          <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://w3.org">
+            <defs>
+              <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#B82925"/>
+                <stop offset="100%" stop-color="#7A1512"/>
+              </linearGradient>
+              <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFD166"/>
+                <stop offset="100%" stop-color="#E59819"/>
+              </linearGradient>
+            </defs>
+            <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+            <circle cx="256" cy="256" r="190" fill="none" stroke="url(#gold)" stroke-width="14"/>
+            <circle cx="256" cy="256" r="165" fill="url(#gold)" opacity="0.15"/>
+            <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="180" fill="#FFFFFF">পা</text>
+            <circle cx="385" cy="135" r="24" fill="url(#gold)"/>
+          </svg>
+          EOF
+
+          rsvg-convert -w 512 -h 512 icon.svg -o icon.png
+          for dir in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            cp icon.png android/app/src/main/res/$dir/ic_launcher.png
+            cp icon.png android/app/src/main/res/$dir/ic_launcher_round.png
+            cp icon.png android/app/src/main/res/$dir/ic_launcher_foreground.png
+          done
+
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
